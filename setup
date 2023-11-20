@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# adds dbus-opendtu package
+
+origPackageName="victron-rpi-backup"
+packageLogFile="/var/log/$origPackageName/current"
+
+#### following lines incorporate SetupHelper utilities into this script
+# Refer to the SetupHelper ReadMe file for details.
+    
+source "/data/SetupHelper/CommonResources"
+
+#### end of lines to include SetupHelper
+
+#### running manually and OK to proceed - prompt for input
+if [ $scriptAction == 'NONE' ] ; then
+    echo
+    echo "The $origPackageName package installs backup adds support."
+	echo "You need to adjust the /data/$origPackageName/config.ini file for your system!"
+    echo
+    standardActionPrompt
+fi
+
+#### here to do the actual work
+
+if [ $scriptAction == 'INSTALL' ] ; then
+    logMessage "++ Installing $origPackageName"
+
+    updateActiveFile "/etc/cron.d/backup"
+	
+	# copy mount.cifs if missing on system (like on Venus OS)
+	if [ ! -f "/sbin/mount.cifs" ]; then
+		echo "Copy missing \"mount.cifs\" to \"/sbin/mount.cifs\""
+		cp $scriptDir/ext/sbin/mount.cifs /sbin
+		chmod +x /sbin/mount.cifs
+		chmod u+s /sbin/mount.cifs
+	fi
+
+	# copy mount.nfs if missing on system (like on Venus OS)
+	if [ ! -f "/sbin/mount.nfs" ]; then
+		echo "Copy missing \"mount.nfs\" to \"/sbin/mount.nfs\""
+		cp $scriptDir/ext/sbin/mount.nfs /sbin
+		chmod +x /sbin/mount.nfs
+		chmod u+s /sbin/mount.nfs
+	fi
+
+	# copy libcap-ng.so.0.0.0 if missing on system and create symbolic link (like on Venus OS not large)
+	if [ ! -L "/lib/libcap-ng.so.0.0.0" ]; then
+		echo "Copy missing \"libcap-ng.so.0.0.0\" to \"/lib/libcap-ng.so.0.0.0\""
+		cp $scriptDir/ext/lib/libcap-ng.so.0.0.0 /lib
+		chmod +x /lib/libcap-ng.so.0.0.0
+	fi
+	if [ ! -L "/lib/libcap-ng.so.0" ]; then
+		echo "Creating missing symbolic link \"/lib/libcap-ng.so.0\" to \"/lib/libcap-ng.so.0.0.0\""
+		ln -s "/lib/libcap-ng.so.0.0.0" "/lib/libcap-ng.so.0"
+	fi
+fi
+
+# #### uninstalling - check scriptAction again
+# if an install step failed package needs to be removed
+if [ $scriptAction == 'UNINSTALL' ] ; then
+    logMessage "++ Uninstalling $origPackageName"
+
+    restoreActiveFile "/etc/cron.d/backup"
+fi
+
+# thats all folks - SCRIPT EXITS INSIDE THE FUNCTION
+endScript

@@ -1,0 +1,7 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m  h dom mon dow user command
+ 17 12   1   *   * root /data/victron-rpi-backup/backup.sh
+ 31 11   *   *   * root /data/victron-rpi-backup/backup_data.sh
+ 
